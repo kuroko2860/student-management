@@ -1,98 +1,23 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import supabase from "./supabase-client";
+import { BrowserRouter, Link, Routes, Route } from "react-router-dom";
+import Classes from "@/pages/Classes";
+import Attendance from "@/pages/Attendance";
 
+function Home() {
+  return <h1>Home Page</h1>;
+}
 function App() {
-  const [todoList, setTodoList] = useState([]);
-  const [newTodo, setNewTodo] = useState("");
-
-  useEffect(() => {
-    fetchTodos();
-  }, []);
-
-  const fetchTodos = async () => {
-    const { data, error } = await supabase.from("TodoList").select("*");
-    if (error) {
-      console.log("Error fetching: ", error);
-    } else {
-      setTodoList(data);
-    }
-  };
-
-  const addTodo = async () => {
-    const newTodoData = {
-      name: newTodo,
-      isCompleted: false,
-    };
-    const { data, error } = await supabase
-      .from("TodoList")
-      .insert([newTodoData])
-      .single();
-
-    if (error) {
-      console.log("Error adding todo: ", error);
-    } else {
-      setTodoList((prev) => [...prev, data]);
-      setNewTodo("");
-    }
-  };
-
-  const completeTask = async (id, isCompleted) => {
-    const { data, error } = await supabase
-      .from("TodoList")
-      .update({ isCompleted: !isCompleted })
-      .eq("id", id);
-
-    if (error) {
-      console.log("error toggling task: ", error);
-    } else {
-      const updatedTodoList = todoList.map((todo) =>
-        todo.id === id ? { ...todo, isCompleted: !isCompleted } : todo
-      );
-      setTodoList(updatedTodoList);
-    }
-  };
-
-  const deleteTask = async (id) => {
-    const { data, error } = await supabase
-      .from("TodoList")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      console.log("error deleting task: ", error);
-    } else {
-      setTodoList((prev) => prev.filter((todo) => todo.id !== id));
-    }
-  };
-
-  return (
-    <div>
-      {" "}
-      <h1>Todo List</h1>
-      <div>
-        <input
-          type="text"
-          placeholder="New Todo..."
-          value={newTodo}
-          onChange={(e) => setNewTodo(e.target.value)}
-        />
-        <button onClick={addTodo}> Add Todo Item</button>
-      </div>
-      <ul>
-        {todoList.map((todo) => (
-          <li>
-            <p> {todo.name}</p>
-            <button onClick={() => completeTask(todo.id, todo.isCompleted)}>
-              {" "}
-              {todo.isCompleted ? "Undo" : "Complete Task"}
-            </button>
-            <button onClick={() => deleteTask(todo.id)}> Delete Task</button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  <BrowserRouter>
+    <nav>
+      <Link to="/">Home</Link>
+      <Link to="/classes">Classes</Link>
+      <Link to="/attendance">Điểm danh</Link>
+    </nav>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/classes" element={<Classes />} />
+      <Route path="/attendance" element={<Attendance />} />
+    </Routes>
+  </BrowserRouter>;
 }
 
 export default App;
