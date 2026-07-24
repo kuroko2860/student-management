@@ -1,89 +1,98 @@
-# Todo List App with Supabase, React, and Vite
+# Sổ lớp học — React + Firebase
 
-This is a simple Todo List application built with **React**, **Supabase**, and **Vite**. It allows users to create, read, update, and delete their own tasks, stored securely in a Supabase database.
+Thay thế bảng Google Sheets: điểm danh theo buổi, tự tính học phí, quản lý lịch dạy tuần.
 
-Check out my YouTube channel for more tutorials: [@pedrotechnologies](https://www.youtube.com/@pedrotechnologies)
+## Tính năng
 
-## Features
+| Trong ảnh Sheets | Trong app |
+|---|---|
+| Các tab DS 12 / DS 11 / DS 10 | Tab lớp, thêm/sửa/xoá lớp, mỗi lớp có học phí riêng |
+| Danh sách học sinh | Thêm học sinh, sửa tên tại chỗ, xoá học sinh |
+| Ô tick Tháng 7 / Tháng 8 | Cột "Đã thu" theo từng tháng |
+| Số buổi học / nghỉ / thành tiền | Tự tính từ lưới điểm danh |
+| Sheet "Lịch dạy" | Lưới Sáng/Chiều/Tối × 7 ngày, gán lớp cho từng ô |
+| — | Ghi lý do nghỉ cho từng buổi |
+| — | Xuất Excel (2 sheet) và in phiếu báo học phí / lưu PDF |
+| — | Mã QR VietQR trên phiếu, đúng số tiền và nội dung từng em |
+| — | Tin nhắn gửi phụ huynh soạn sẵn theo mẫu tự đặt |
 
-- Create a new todo item
-- Read (view) all todos created by the authenticated user
-- Update the name or completion status of a todo
-- Delete a todo item
+Số buổi trong tháng **sinh tự động từ lịch dạy**. Bấm ngày trên đầu cột để bỏ một buổi (nghỉ lễ), hoặc "Thêm buổi dạy bù" để chèn buổi ngoài lịch.
 
-## Technologies Used
+## Ghi lý do nghỉ
 
-- **React**: Frontend library for building the user interface
-- **Supabase**: Backend as a service for managing the database and authentication
-- **Vite**: Build tool for fast development
-- **PostgreSQL**: Database for storing todo items
+Bấm ô → đánh dấu nghỉ (ô đỏ ✕). Bấm lần nữa vào ô đỏ → hộp thoại chọn lý do có sẵn
+(Ốm, Việc gia đình, Nghỉ lễ, Trùng lịch học, Không báo trước) hoặc tự nhập.
+Ô đã có lý do được gạch chân; rê chuột lên ô sẽ thấy lý do.
 
-## Setup
+## Xuất file gửi phụ huynh
 
-Follow these steps to set up the project locally.
+- **Xuất Excel** — file `.xlsx` gồm sheet *Điểm danh* (lưới x/N, số buổi, tiền học, cột lý do nghỉ)
+  và sheet *Lý do nghỉ* (nhật ký từng buổi vắng).
+- **In phiếu báo / PDF** — mở cửa sổ in khổ A4: trang tổng kết cả lớp, rồi mỗi học sinh một phiếu
+  báo học phí riêng (số buổi, danh sách buổi nghỉ kèm lý do, thành tiền, tình trạng thanh toán).
+  Trong hộp thoại in chọn **Lưu thành PDF** để gửi cho phụ huynh.
+  Nút ⎙ ở cuối mỗi dòng in phiếu của riêng học sinh đó.
 
-### 1. Clone the repository
+> Nếu không thấy cửa sổ in hiện ra, hãy cho phép pop-up cho trang này.
 
-Clone this repository to your local machine:
+## Chuyển khoản bằng mã QR
 
-```
-git clone https://github.com/yourusername/todo-app.git
-cd todo-app
-```
+Vào tab **Cài đặt**, chọn ngân hàng, nhập số tài khoản và tên chủ tài khoản. Từ đó mỗi phiếu báo
+in ra sẽ có mã QR VietQR điền sẵn số tiền của riêng em đó và nội dung dạng `Van Khanh HP T7/26`.
+Học sinh đã tick "Đã thu" thì phiếu không in QR nữa.
 
-### 2. Install dependencies
+Danh sách ngân hàng lấy trực tiếp từ `api.vietqr.io/v2/banks` để mã BIN luôn đúng; nếu không có
+mạng, app dùng danh sách 10 ngân hàng lớn có sẵn trong `src/vietqr.js`.
 
-Install the required dependencies using npm:
+## Tin nhắn gửi phụ huynh
 
-```
+Nút ✉ ở cuối mỗi dòng mở hộp soạn tin đã điền sẵn số liệu của em đó, sửa được trước khi gửi:
+
+> Chào anh/chị, tháng 7/2026 em Phong (Lớp 12) đi học 4/5 buổi, nghỉ 1 buổi (12/7 - ốm).
+> Học phí tháng này: 600.000 ₫. Chuyển khoản: … Cảm ơn anh/chị ạ.
+
+Bấm **Sao chép tin nhắn** rồi dán vào Zalo, hoặc **Chia sẻ qua Zalo…** trên điện thoại để chọn thẳng
+ứng dụng. Nút **Copy tin nhắn cả lớp** gom tin của tất cả học sinh chưa thanh toán vào clipboard.
+
+Mẫu tin sửa được trong tab Cài đặt, dùng các thẻ `{ten}` `{lop}` `{thang}` `{sobuoi}` `{dihoc}`
+`{nghi}` `{chitietnghi}` `{hocphi}` `{chuyenkhoan}`.
+
+## Chạy
+
+```bash
 npm install
-```
-
-### 3. Set up Supabase
-
-1. Go to [Supabase](https://supabase.com) and create a new project.
-2. Set up your database by creating a `todos` table with the following columns:
-   - `id` (Integer, Primary Key, Auto-increment)
-   - `created_at` (Timestamp, default to `now()`)
-   - `name` (Text)
-   - `isCompleted` (Boolean)
-3. Copy your Supabase **URL** and **anon key** from the project settings.
-
-### 4. Configure Supabase Client
-
-In your project folder, create a new file named `src/supabaseClient.js` and paste the following configuration:
-
-```javascript
-import { createClient } from "@supabase/supabase-js";
-
-// Initialize Supabase client with your credentials
-const supabaseUrl = "https://your-project-id.supabase.co";
-const supabaseKey = "your-public-anon-key";
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-export default supabase;
-```
-
-Replace `your-project-id` and `your-public-anon-key` with your actual Supabase credentials.
-
-### 5. Run the Application
-
-Start the development server with:
-
-```
+cp .env.example .env   # điền config Firebase
 npm run dev
 ```
 
-Visit `http://localhost:5173` in your browser to see the Todo List app in action.
+## Cấu hình Firebase
 
-## Usage
+1. Tạo project tại https://console.firebase.google.com
+2. **Authentication → Sign-in method → Google**: bật.
+3. **Firestore Database**: tạo database (production mode).
+4. **Project settings → Your apps → Web app**: copy config vào `.env`.
+5. Dán nội dung `firestore.rules` vào tab Rules của Firestore rồi Publish.
 
-1. **Create Todos**: Add a new todo by typing in the input field and clicking the "Add Todo" button.
-2. **Read Todos**: View your todos listed below the input field.
-3. **Update Todos**: Edit the name of a todo by clicking the "Edit" button and updating it.
-4. **Mark as Completed**: Toggle the completion status of a todo by clicking the "Complete" button.
-5. **Delete Todos**: Remove a todo by clicking the "Delete" button.
+## Cấu trúc dữ liệu
 
-## Contributing
+```
+users/{uid}/classes/{classId}                  { name, fee, order }
+users/{uid}/classes/{classId}/students/{sid}   { name, order }
+users/{uid}/sheets/{classId}__{YYYY-MM}        { absences: {sid: [sessionId]},
+                                                 reasons:  {sid: {sessionId: "Ốm"}},
+                                                 paid: {sid: bool},
+                                                 extraSessions: [], removedSessions: [] }
+users/{uid}/settings/schedule                  { slots: { "toi_0": classId, ... } }
+users/{uid}/settings/payment                   { bankBin, bankName, accountNo,
+                                                 accountName, msgTemplate }
+```
 
-Feel free to fork this project and submit pull requests for bug fixes or enhancements.
+Khoá lịch dạy có dạng `{buổi}_{thứ}` với buổi ∈ `sang|chieu|toi` và thứ 0 = Thứ Hai … 6 = Chủ Nhật.
+
+## Deploy
+
+```bash
+npm run build
+npx firebase-tools deploy --only hosting
+```
+(`firebase init hosting` với thư mục public là `dist`, chế độ SPA.)

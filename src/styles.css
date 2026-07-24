@@ -1,0 +1,664 @@
+:root {
+  --paper: #fbf9f3;
+  --paper-2: #f3efe4;
+  --ink: #16233a;
+  --ink-soft: #5b6474;
+  --rule: #e0dacb;
+  --pen: #c8372d;
+  --paid: #2e6f4e;
+  --stamp: #b4761a;
+
+  --display: "Bricolage Grotesque", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---------- khung trang ---------- */
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.masthead {
+  border-bottom: 2px solid var(--ink);
+  padding: 14px 16px 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.masthead h1 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.masthead .who {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ---------- thanh lớp (tab như sheet) ---------- */
+.tabs {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper-2);
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex: 0 0 auto;
+  border: 1px solid var(--rule);
+  border-bottom: none;
+  background: transparent;
+  padding: 9px 15px;
+  border-radius: 3px 3px 0 0;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  margin-top: 6px;
+}
+
+.tab[aria-selected="true"] {
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 600;
+  border-color: var(--ink);
+  box-shadow: 0 2px 0 0 var(--paper);
+}
+
+.tab-add {
+  border-style: dashed;
+  color: var(--ink-soft);
+}
+
+/* ---------- thanh công cụ ---------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--rule);
+}
+
+.month {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.month button {
+  background: transparent;
+  border: 0;
+  padding: 6px 11px;
+  cursor: pointer;
+  font-family: var(--mono);
+}
+.month span {
+  padding: 6px 12px;
+  font-family: var(--mono);
+  font-size: 13px;
+  border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+  min-width: 118px;
+  text-align: center;
+}
+
+.btn {
+  border: 1px solid var(--ink);
+  background: transparent;
+  border-radius: 3px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn:hover {
+  background: var(--paper-2);
+}
+.btn-solid {
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn-solid:hover {
+  background: #24344f;
+}
+.btn-quiet {
+  border-color: var(--rule);
+  color: var(--ink-soft);
+}
+.btn-danger {
+  border-color: var(--pen);
+  color: var(--pen);
+}
+.btn-sm {
+  padding: 3px 9px;
+  font-size: 13px;
+}
+
+.spacer {
+  margin-left: auto;
+}
+
+/* ---------- bảng điểm danh ---------- */
+.sheet-wrap {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+table.sheet {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+  font-size: 14px;
+}
+
+table.sheet th,
+table.sheet td {
+  border-bottom: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+  padding: 0;
+  text-align: center;
+  height: 40px;
+}
+
+table.sheet thead th {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  border-right-color: #2c3a54;
+}
+
+th.name-col,
+td.name-col {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  text-align: left;
+  padding: 0 12px;
+  background: var(--paper);
+  border-right: 2px solid var(--ink);
+  min-width: 132px;
+  max-width: 160px;
+}
+thead th.name-col {
+  z-index: 4;
+  background: var(--ink);
+}
+
+tbody tr:nth-child(even) td {
+  background: #f7f4ec;
+}
+tbody tr:nth-child(even) td.name-col {
+  background: #f7f4ec;
+}
+
+td.date-col {
+  min-width: 46px;
+}
+th.date-col small {
+  display: block;
+  font-weight: 400;
+  opacity: 0.7;
+  font-size: 10px;
+}
+
+.mark {
+  width: 100%;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--paid);
+}
+.mark.off {
+  color: var(--pen);
+  font-weight: 600;
+  background: rgba(200, 55, 45, 0.09);
+}
+
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.amount {
+  font-family: var(--mono);
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 0 10px;
+}
+td.sum-col {
+  background: var(--paper-2);
+}
+tbody tr:nth-child(even) td.sum-col {
+  background: #eee9dc;
+}
+
+.paid-box {
+  width: 19px;
+  height: 19px;
+  accent-color: var(--paid);
+  cursor: pointer;
+}
+
+.name-edit {
+  border: 0;
+  background: transparent;
+  width: 100%;
+  padding: 9px 0;
+  font-weight: 500;
+}
+.name-edit:focus {
+  outline: 1px dashed var(--stamp);
+}
+
+tfoot td {
+  background: var(--paper-2);
+  font-weight: 600;
+  border-top: 2px solid var(--ink);
+  padding: 0 10px;
+}
+
+.row-del {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--rule);
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 6px;
+}
+tr:hover .row-del {
+  color: var(--pen);
+}
+
+/* ---------- khối tổng kết ---------- */
+.totals {
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  padding: 16px;
+  border-top: 1px solid var(--rule);
+  align-items: flex-end;
+}
+.totals dt {
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 2px;
+}
+.totals dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 21px;
+  font-weight: 600;
+}
+.totals dd.pen {
+  color: var(--pen);
+}
+.totals dd.ok {
+  color: var(--paid);
+}
+
+/* ---------- lịch dạy ---------- */
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 74px repeat(7, minmax(94px, 1fr));
+  border-left: 1px solid var(--rule);
+  border-top: 1px solid var(--rule);
+  min-width: 720px;
+}
+.schedule-wrap {
+  overflow-x: auto;
+  padding: 16px;
+}
+
+.cell {
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  min-height: 54px;
+  padding: 4px;
+}
+.cell.head {
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+}
+.cell.slot {
+  background: var(--stamp);
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+.cell select {
+  width: 100%;
+  height: 100%;
+  min-height: 46px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 2px;
+}
+.cell select.filled {
+  background: #e6efe9;
+  color: var(--paid);
+  font-weight: 600;
+}
+
+/* ---------- màn hình phụ ---------- */
+.center {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  text-align: center;
+}
+.center h2 {
+  font-family: var(--display);
+  font-size: 26px;
+  margin: 0 0 6px;
+}
+.center p {
+  color: var(--ink-soft);
+  max-width: 34ch;
+  margin: 0 auto 18px;
+}
+
+.empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+}
+
+.views {
+  display: flex;
+  gap: 2px;
+}
+.views button {
+  border: 1px solid var(--rule);
+  background: transparent;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.views button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--stamp);
+  outline-offset: 1px;
+}
+
+@media (max-width: 560px) {
+  .masthead h1 {
+    font-size: 18px;
+  }
+  .totals dd {
+    font-size: 18px;
+  }
+}
+
+/* ---------- ghi lý do nghỉ ---------- */
+.col-drop {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.mark.noted {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+td.ops {
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.row-btn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--rule);
+  font-size: 15px;
+  line-height: 1;
+  padding: 4px 5px;
+}
+.row-btn:hover {
+  color: var(--ink);
+}
+.row-btn.del:hover {
+  color: var(--pen);
+}
+tr:hover .row-btn {
+  color: var(--ink-soft);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(22, 35, 58, 0.42);
+  display: grid;
+  place-items: end center;
+  z-index: 20;
+  padding: 16px;
+}
+@media (min-width: 620px) {
+  .backdrop {
+    place-items: center;
+  }
+}
+
+.dialog {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  padding: 18px;
+  width: min(440px, 100%);
+  box-shadow: 0 10px 40px rgba(22, 35, 58, 0.25);
+}
+
+.dialog .eyebrow {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pen);
+}
+.dialog h3 {
+  font-family: var(--display);
+  font-size: 20px;
+  margin: 4px 0 2px;
+}
+.dialog .hint {
+  margin: 0 0 14px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  border: 1px solid var(--rule);
+  background: transparent;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.chip:hover {
+  border-color: var(--ink-soft);
+}
+.chip.on {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* ---------- cài đặt & tin nhắn ---------- */
+.settings {
+  display: grid;
+  gap: 18px;
+  padding: 18px 16px 40px;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+@media (min-width: 860px) {
+  .settings {
+    grid-template-columns: minmax(0, 1fr) 260px;
+  }
+}
+
+.panel {
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--ink);
+  background: #fff;
+  padding: 18px;
+}
+.panel h2 {
+  font-family: var(--display);
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+.panel label {
+  display: block;
+  margin-top: 14px;
+  font-size: 12px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.panel input,
+.panel select,
+.panel textarea,
+.dialog textarea {
+  width: 100%;
+  margin-top: 5px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 9px 10px;
+  background: var(--paper);
+  font-size: 15px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.panel textarea,
+.dialog textarea {
+  font-family: var(--body);
+  line-height: 1.55;
+  resize: vertical;
+}
+.dialog textarea {
+  margin-top: 12px;
+}
+.panel input:focus,
+.panel select:focus,
+.panel textarea:focus {
+  border-color: var(--ink);
+}
+
+.qr-preview {
+  width: 100%;
+  max-width: 230px;
+  margin-top: 10px;
+  border: 1px solid var(--rule);
+  background: #fff;
+}
+
+.dialog.wide {
+  width: min(560px, 100%);
+}
+
+.qr-block {
+  margin-top: 12px;
+}
+.qr-block summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding: 4px 0;
+}
