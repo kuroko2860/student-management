@@ -80,7 +80,8 @@ export default function App() {
                 supabase.auth.signInWithOAuth({
                   provider: "google",
                   options: {
-                    redirectTo: window.location.origin,
+                    redirectTo:
+                      "https://kuroko2860.github.io/student-management/", //window.location.origin,
                   },
                 })
               }
@@ -94,7 +95,8 @@ export default function App() {
                 supabase.auth.signInWithOAuth({
                   provider: "github",
                   options: {
-                    redirectTo: window.location.origin,
+                    redirectTo:
+                      "https://kuroko2860.github.io/student-management/", //window.location.origin,
                   },
                 })
               }
