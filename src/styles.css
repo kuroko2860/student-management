@@ -7,6 +7,10 @@
   --pen: #c8372d;
   --paid: #2e6f4e;
   --stamp: #b4761a;
+  /* Color scheme for past/current/future dates */
+  --bg-past: #dad0d0; /* Light gray for past dates */
+  --bg-current: #fff3cd; /* Light yellow for today */
+  --bg-future: #f1f2ff; /* Light blue for future dates */
 
   --display: "Bricolage Grotesque", system-ui, sans-serif;
   --body: "IBM Plex Sans", system-ui, sans-serif;
@@ -661,4 +665,62 @@ tr:hover .row-btn {
   font-size: 13px;
   color: var(--ink-soft);
   padding: 4px 0;
+}
+
+/* Apply background colors to date columns based on status */
+.date-col.past {
+  background-color: var(--bg-past);
+}
+
+.date-col.current {
+  background-color: var(--bg-current);
+  font-weight: 500;
+  border-bottom: 2px solid #ffc107;
+}
+
+.date-col.future {
+  background-color: var(--bg-future);
+  opacity: 0.85;
+}
+
+/* Optional: Add subtle transitions */
+.date-col {
+  transition: background-color 0.2s ease;
+}
+
+.mark {
+  transition: all 0.2s ease;
+}
+
+/* Mark button styling for past dates (more contrast) */
+.date-col.past .mark {
+  opacity: 0.95;
+}
+
+.date-col.future .mark {
+  opacity: 0.7;
+}
+
+/* Enhance the "off" (absent) marking */
+.mark.off {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Hide/dim future date markings to prevent accidental clicks */
+.date-col.future .mark {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.date-col.future .mark:hover {
+  opacity: 0.7;
+}
+
+/* Responsive: Stack legend on mobile */
+@media (max-width: 768px) {
+  [style*="display: flex"][style*="gap: 16px"] {
+    flex-direction: column;
+    gap: 8px !important;
+  }
 }
