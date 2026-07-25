@@ -154,6 +154,7 @@ export default function AttendanceSheet({
         <table className="sheet">
           <thead>
             <tr>
+              <th>STT</th>
               <th className="name-col">Học sinh</th>
               {sessions.map((s) => {
                 const status = getSessionStatus(s);
@@ -196,8 +197,9 @@ export default function AttendanceSheet({
           </thead>
 
           <tbody>
-            {rows.map((r) => (
+            {rows.map((r, i) => (
               <tr key={r.student.id}>
+                <td>{i + 1}</td>
                 <td className="name-col">
                   <input
                     className="name-edit"
