@@ -20,6 +20,14 @@ export default function App() {
   const [view, setView] = useState("sheet");
   const [activeId, setActiveId] = useState(null);
   const [month, setMonth] = useState(monthKey());
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault(); // Stops full page refresh
+    console.log("Submitted Data:", { email, password });
+    supabase.auth.signInWithPassword({ email, password });
+  };
 
   useEffect(() => {
     // Check if user is already logged in
@@ -74,14 +82,45 @@ export default function App() {
               Điểm danh, tính học phí và theo dõi lịch dạy của tất cả các lớp
               trong một chỗ.
             </p>
+            {/* create email/password form to login*/}
+            <form
+              onSubmit={handleSubmit}
+              style={{ maxWidth: "300px", margin: "20px" }}
+            >
+              <h2>Sign In</h2>
+
+              <div>
+                <label>Email: </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ marginTop: "10px" }}>
+                <label>Password: </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button type="submit" style={{ marginTop: "15px" }}>
+                Submit
+              </button>
+            </form>
+
             <button
               className="btn btn-solid"
               onClick={() =>
                 supabase.auth.signInWithOAuth({
                   provider: "google",
                   options: {
-                    redirectTo:
-                      "https://kuroko2860.github.io/student-management/", //window.location.origin,
+                    redirectTo: window.location.origin,
                   },
                 })
               }
@@ -95,8 +134,7 @@ export default function App() {
                 supabase.auth.signInWithOAuth({
                   provider: "github",
                   options: {
-                    redirectTo:
-                      "https://kuroko2860.github.io/student-management/", //window.location.origin,
+                    redirectTo: window.location.origin,
                   },
                 })
               }
