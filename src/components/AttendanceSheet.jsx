@@ -148,6 +148,38 @@ export default function AttendanceSheet({
 
   const totalPastDates = countTotalPastDates();
 
+  const toggleSessionColumn = (sessionId) => {
+    const anyAbsent = students.some((student) =>
+      (sheet?.absences?.[student.id] || []).includes(sessionId),
+    );
+
+    const newAbsences = { ...sheet?.absences };
+
+    if (anyAbsent) {
+      students.forEach((student) => {
+        if (newAbsences[student.id]) {
+          newAbsences[student.id] = newAbsences[student.id].filter(
+            (id) => id !== sessionId,
+          );
+          if (newAbsences[student.id].length === 0) {
+            delete newAbsences[student.id];
+          }
+        }
+      });
+    } else {
+      students.forEach((student) => {
+        if (!newAbsences[student.id]) {
+          newAbsences[student.id] = [];
+        }
+        if (!newAbsences[student.id].includes(sessionId)) {
+          newAbsences[student.id] = [...newAbsences[student.id], sessionId];
+        }
+      });
+    }
+
+    saveSheet(uid, cls.id, month, { absences: newAbsences });
+  };
+
   return (
     <>
       <div className="sheet-wrap">
@@ -176,13 +208,55 @@ export default function AttendanceSheet({
                           : "Ngày sắp tới"
                     }
                   >
-                    <button
-                      className="col-drop"
-                      onClick={() => dropSession(s.id)}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
                     >
-                      {dateShort(s.date)}
-                    </button>
-                    <small>{s.slot === "bu" ? "bù" : DAYS_SHORT[s.day]}</small>
+                      <button
+                        className="col-drop"
+                        onClick={() => dropSession(s.id)}
+                      >
+                        {dateShort(s.date)}
+                      </button>
+                      <button
+                        onClick={() => toggleSessionColumn(s.id)}
+                        style={{
+                          padding: "2px 6px",
+                          fontSize: "0.75em",
+                          backgroundColor: students.some((st) =>
+                            (sheet?.absences?.[st.id] || []).includes(s.id),
+                          )
+                            ? "#ff9c9c"
+                            : "#f0fdf4",
+                          border: "1px solid #ccc",
+                          borderRadius: 3,
+                          cursor: "pointer",
+                          minWidth: 50,
+                          whiteSpace: "nowrap",
+                          color: "black",
+                        }}
+                        title={
+                          students.some((st) =>
+                            (sheet?.absences?.[st.id] || []).includes(s.id),
+                          )
+                            ? "Mark all present"
+                            : "Mark all absent"
+                        }
+                      >
+                        {students.some((st) =>
+                          (sheet?.absences?.[st.id] || []).includes(s.id),
+                        )
+                          ? "Có nghỉ"
+                          : "Tất cả có"}
+                      </button>
+                      <small>
+                        {s.slot === "bu" ? "bù" : DAYS_SHORT[s.day]}
+                      </small>
+                    </div>
                   </th>
                 );
               })}
