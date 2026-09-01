@@ -58,6 +58,7 @@ export default function AttendanceSheet({
     list.add(sessionId);
     saveSheet(uid, cls.id, month, {
       absences: { ...(sheet?.absences || {}), [sid]: [...list] },
+      paid: sheet?.paid || {},
     });
   };
 
@@ -66,6 +67,7 @@ export default function AttendanceSheet({
     list.delete(sessionId);
     saveSheet(uid, cls.id, month, {
       absences: { ...(sheet?.absences || {}), [sid]: [...list] },
+      paid: sheet?.paid || {},
     });
   };
 
@@ -83,6 +85,7 @@ export default function AttendanceSheet({
 
   const togglePaid = (sid) =>
     saveSheet(uid, cls.id, month, {
+      absences: sheet?.absences || {},
       paid: { ...(sheet?.paid || {}), [sid]: !sheet?.paid?.[sid] },
     });
 
@@ -177,7 +180,10 @@ export default function AttendanceSheet({
       });
     }
 
-    saveSheet(uid, cls.id, month, { absences: newAbsences });
+    saveSheet(uid, cls.id, month, {
+      absences: newAbsences,
+      paid: sheet?.paid || {},
+    });
   };
 
   return (
