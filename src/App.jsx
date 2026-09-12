@@ -48,7 +48,7 @@ export default function App() {
   const uid = user?.id;
   const { classes, loadingClasses } = useClasses(uid);
   const active = classes.find((c) => c.id === activeId) || classes[0] || null;
-  const students = useStudents(uid, active?.id);
+  const students = useStudents(uid, active?.id, month);
   const sheet = useSheet(uid, active?.id, month);
   const schedule = useSchedule(uid);
   const payment = usePayment(uid);

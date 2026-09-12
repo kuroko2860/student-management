@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
+import { monthKey } from "./lib";
 
 /* ---------- Realtime subscriptions ---------- */
 export function useClasses(uid) {
@@ -59,16 +60,45 @@ export function useClasses(uid) {
   return { classes: rows, loadingClasses: loading };
 }
 
-export function useStudents(uid, cid) {
+export function useStudents(uid, cid, month) {
   const [rows, setRows] = useState([]);
 
   useEffect(() => {
-    if (!uid || !cid) {
+    if (!uid || !cid || !month) {
       setRows([]);
       return;
     }
 
+    const currentMonth = monthKey();
+    const isPastMonth = month < currentMonth;
+
     const fetchStudents = async () => {
+      if (isPastMonth) {
+        // Historical month:
+        // get the latest roster that was effective at that month.
+        const { data, error } = await supabase
+          .from("student_history")
+          .select("students")
+          .eq("user_id", uid)
+          .eq("class_id", cid)
+          .lte("effective_month", `${month}-01`)
+          .order("effective_month", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error fetching student history:", error);
+          setRows([]);
+          return;
+        }
+
+        setRows(data?.students || []);
+        return;
+      }
+
+      // Current/future month:
+      // use the live students table.
       const { data, error } = await supabase
         .from("students")
         .select("*")
@@ -76,13 +106,19 @@ export function useStudents(uid, cid) {
         .eq("class_id", cid)
         .order("order", { ascending: true });
 
-      if (error) console.error("Error fetching students:", error);
-      else setRows(data || []);
+      if (error) {
+        console.error("Error fetching students:", error);
+      } else {
+        setRows(data || []);
+      }
     };
 
     fetchStudents();
 
-    // Setup realtime subscription
+    // Historical months are immutable from the UI,
+    // so realtime updates from students are not relevant.
+    if (isPastMonth) return;
+
     const subscription = supabase
       .channel(`students:${uid}:${cid}`)
       .on(
@@ -97,13 +133,18 @@ export function useStudents(uid, cid) {
           setRows((prev) => {
             if (payload.eventType === "DELETE") {
               return prev.filter((s) => s.id !== payload.old.id);
-            } else if (payload.eventType === "INSERT") {
-              return [...prev, payload.new].sort((a, b) => a.order - b.order);
-            } else if (payload.eventType === "UPDATE") {
-              return prev.map((s) =>
-                s.id === payload.new.id ? payload.new : s,
-              );
             }
+
+            if (payload.eventType === "INSERT") {
+              return [...prev, payload.new].sort((a, b) => a.order - b.order);
+            }
+
+            if (payload.eventType === "UPDATE") {
+              return prev
+                .map((s) => (s.id === payload.new.id ? payload.new : s))
+                .sort((a, b) => a.order - b.order);
+            }
+
             return prev;
           });
         },
@@ -113,7 +154,7 @@ export function useStudents(uid, cid) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [uid, cid]);
+  }, [uid, cid, month]);
 
   return rows;
 }
@@ -331,10 +372,24 @@ export const removeClass = async (uid, cid) => {
 export const addStudent = async (uid, cid, name, order) => {
   const { data, error } = await supabase
     .from("students")
-    .insert([{ user_id: uid, class_id: cid, name, order, note: "" }])
+    .insert([
+      {
+        user_id: uid,
+        class_id: cid,
+        name,
+        order,
+        note: "",
+      },
+    ])
     .select();
 
-  if (error) console.error("Error adding student:", error);
+  if (error) {
+    console.error("Error adding student:", error);
+    return;
+  }
+
+  await saveStudentHistory(uid, cid, monthKey());
+
   return data?.[0];
 };
 
@@ -346,7 +401,12 @@ export const updateStudent = async (uid, cid, sid, data) => {
     .eq("user_id", uid)
     .eq("class_id", cid);
 
-  if (error) console.error("Error updating student:", error);
+  if (error) {
+    console.error("Error updating student:", error);
+    return;
+  }
+
+  await saveStudentHistory(uid, cid, monthKey());
 };
 
 export const removeStudent = async (uid, cid, sid) => {
@@ -357,7 +417,12 @@ export const removeStudent = async (uid, cid, sid) => {
     .eq("user_id", uid)
     .eq("class_id", cid);
 
-  if (error) console.error("Error removing student:", error);
+  if (error) {
+    console.error("Error removing student:", error);
+    return;
+  }
+
+  await saveStudentHistory(uid, cid, monthKey());
 };
 
 export const saveSheet = async (uid, cid, month, data) => {
@@ -405,5 +470,32 @@ export const saveSchedule = async (uid, month, slots) => {
 
   if (error) {
     console.error("Error saving schedule:", error);
+  }
+};
+
+const saveStudentHistory = async (uid, cid, effectiveMonth) => {
+  const { data, error } = await supabase
+    .from("students")
+    .select("*")
+    .eq("user_id", uid)
+    .eq("class_id", cid)
+    .order("order", { ascending: true });
+
+  if (error) {
+    console.error("Error reading students for history:", error);
+    return;
+  }
+
+  const { error: historyError } = await supabase
+    .from("student_history")
+    .insert({
+      user_id: uid,
+      class_id: cid,
+      effective_month: `${effectiveMonth}-01`,
+      students: data || [],
+    });
+
+  if (historyError) {
+    console.error("Error saving student history:", historyError);
   }
 };

@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { addStudent, removeStudent, updateStudent, saveSheet } from "../store";
-import { summarize, money, dateShort, DAYS_SHORT, buildMessage } from "../lib";
+import {
+  summarize,
+  money,
+  dateShort,
+  DAYS_SHORT,
+  buildMessage,
+  monthKey,
+} from "../lib";
 import { exportExcel, printSlips } from "../export";
 import AbsenceDialog from "./AbsenceDialog";
 import MessageDialog from "./MessageDialog";
@@ -15,6 +22,9 @@ export default function AttendanceSheet({
   teacher,
   payment,
 }) {
+  const currentMonth = monthKey();
+  const isPastMonth = month < currentMonth;
+
   const [newName, setNewName] = useState("");
   const [dialog, setDialog] = useState(null);
   const [msg, setMsg] = useState(null);
@@ -96,6 +106,7 @@ export default function AttendanceSheet({
     });
 
   const addSession = () => {
+    if (isPastMonth) return;
     const date = prompt(
       "Thêm buổi dạy bù — nhập ngày (YYYY-MM-DD):",
       `${month}-01`,
@@ -113,6 +124,7 @@ export default function AttendanceSheet({
 
   const add = (e) => {
     e.preventDefault();
+    if (isPastMonth) return;
     const name = newName.trim();
     if (!name) return;
     addStudent(uid, cls.id, name, students.length);
@@ -224,12 +236,20 @@ export default function AttendanceSheet({
                     >
                       <button
                         className="col-drop"
-                        onClick={() => dropSession(s.id)}
+                        disabled={isPastMonth}
+                        onClick={() => {
+                          if (!isPastMonth) dropSession(s.id);
+                        }}
                       >
                         {dateShort(s.date)}
                       </button>
                       <button
-                        onClick={() => toggleSessionColumn(s.id)}
+                        disabled={isPastMonth}
+                        onClick={() => {
+                          if (!isPastMonth) {
+                            toggleSessionColumn(s.id);
+                          }
+                        }}
                         style={{
                           padding: "2px 6px",
                           fontSize: "0.75em",
@@ -240,7 +260,8 @@ export default function AttendanceSheet({
                             : "#f0fdf4",
                           border: "1px solid #ccc",
                           borderRadius: 3,
-                          cursor: "pointer",
+                          cursor: isPastMonth ? "not-allowed" : "pointer",
+                          opacity: isPastMonth ? 0.5 : 1,
                           minWidth: 50,
                           whiteSpace: "nowrap",
                           color: "black",
@@ -284,10 +305,15 @@ export default function AttendanceSheet({
                   <input
                     className="name-edit"
                     defaultValue={r.student.name}
+                    disabled={isPastMonth}
                     onBlur={(e) => {
+                      if (isPastMonth) return;
+
                       const v = e.target.value.trim();
-                      if (v && v !== r.student.name)
+
+                      if (v && v !== r.student.name) {
                         updateStudent(uid, cls.id, r.student.id, { name: v });
+                      }
                     }}
                   />
                 </td>
@@ -307,11 +333,18 @@ export default function AttendanceSheet({
                     <td key={s.id} className={`date-col ${statusClass}`}>
                       <button
                         className={`mark ${isAbsent ? "off" : ""}`}
-                        onClick={() => tapCell(r.student, s)}
+                        disabled={isPastMonth}
+                        onClick={() => {
+                          if (!isPastMonth) {
+                            tapCell(r.student, s);
+                          }
+                        }}
                         title={
-                          isAbsent
-                            ? "Đã đánh dấu nghỉ — bấm để bỏ đánh dấu"
-                            : "Bấm để đánh dấu nghỉ"
+                          isPastMonth
+                            ? "Tháng đã qua — không thể thay đổi điểm danh"
+                            : isAbsent
+                              ? "Đã đánh dấu nghỉ — bấm để bỏ đánh dấu"
+                              : "Bấm để đánh dấu nghỉ"
                         }
                       >
                         {isAbsent ? "✕" : "•"}
@@ -358,7 +391,12 @@ export default function AttendanceSheet({
                   </button>
                   <button
                     className="row-btn del"
-                    title="Xoá học sinh"
+                    title={
+                      isPastMonth
+                        ? "Tháng đã qua — không thể xoá học sinh"
+                        : "Xoá học sinh"
+                    }
+                    disabled={isPastMonth}
                     onClick={() => {
                       if (
                         confirm(`Xoá ${r.student.name} khỏi lớp ${cls.name}?`)
@@ -400,17 +438,27 @@ export default function AttendanceSheet({
       <div className="toolbar">
         <form onSubmit={add} style={{ display: "flex", gap: 8 }}>
           <input
-            className="btn"
+            className={`btn ${isPastMonth ? "btn-disabled" : ""}`}
             style={{ minWidth: 190 }}
             placeholder="Tên học sinh mới"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
+            disabled={isPastMonth}
           />
-          <button className="btn btn-solid" type="submit">
+
+          <button
+            className={`btn btn-solid ${isPastMonth ? "btn-disabled" : ""}`}
+            type="submit"
+            disabled={isPastMonth}
+          >
             Thêm học sinh
           </button>
         </form>
-        <button className="btn btn-quiet" onClick={addSession}>
+        <button
+          className={`btn btn-quiet ${isPastMonth ? "btn-disabled" : ""}`}
+          disabled={isPastMonth}
+          onClick={addSession}
+        >
           Thêm buổi dạy bù
         </button>
         <div className="spacer" />

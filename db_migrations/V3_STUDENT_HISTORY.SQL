@@ -33,3 +33,28 @@ on public.student_history
 for insert
 to authenticated
 with check (auth.uid() = user_id);
+
+create policy "Users can update own student history"
+on public.student_history
+for update
+to authenticated
+with check (auth.uid() = user_id);
+
+-- insert into public.student_history (
+--   user_id,
+--   class_id,
+--   effective_month,
+--   students
+-- )
+-- select
+--   s.user_id,
+--   s.class_id,
+--   '2026-07-01'::date,
+--   jsonb_agg(
+--     to_jsonb(s)
+--     order by s."order"
+--   )
+-- from public.students s
+-- group by
+--   s.user_id,
+--   s.class_id;
