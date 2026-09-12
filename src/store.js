@@ -195,41 +195,45 @@ export function useSheet(uid, cid, month) {
 }
 
 export function useSchedule(uid) {
-  const [schedule, setSchedule] = useState(null);
+  const [schedule, setSchedule] = useState([]);
 
   useEffect(() => {
-    if (!uid) return;
+    if (!uid) {
+      setSchedule([]);
+      return;
+    }
 
     const fetchSchedule = async () => {
       const { data, error } = await supabase
-        .from("user_settings")
-        .select("schedule_slots")
+        .from("schedule_history")
+        .select("id, effective_month, schedule_slots, created_at")
         .eq("user_id", uid)
-        .eq("setting_type", "schedule")
-        .single();
+        .order("effective_month", { ascending: true });
 
-      if (error && error.code !== "PGRST116") {
-        console.error("Error fetching schedule:", error);
+      if (error) {
+        console.error("Error fetching schedule history:", error);
+        return;
       }
 
-      setSchedule(data?.schedule_slots || {});
+      setSchedule(data || []);
     };
 
     fetchSchedule();
 
-    // Setup realtime subscription
     const subscription = supabase
-      .channel(`schedule:${uid}`)
+      .channel(`schedule-history:${uid}`)
       .on(
         "postgres_changes",
         {
-          event: "UPDATE",
+          event: "*",
           schema: "public",
-          table: "user_settings",
-          filter: `user_id=eq.${uid},setting_type=eq.schedule`,
+          table: "schedule_history",
+          filter: `user_id=eq.${uid}`,
         },
-        (payload) => {
-          setSchedule(payload.new.schedule_slots || {});
+        () => {
+          // Re-fetch instead of trying to manually merge INSERT/UPDATE.
+          // Schedule history is small and this keeps the state simple.
+          fetchSchedule();
         },
       )
       .subscribe();
@@ -384,16 +388,22 @@ export const savePayment = async (uid, data) => {
   if (error) console.error("Error saving payment:", error);
 };
 
-export const saveSchedule = async (uid, slots) => {
-  const { error } = await supabase.from("user_settings").upsert(
+export const saveSchedule = async (uid, month, slots) => {
+  // effective_month is always the first day of the month.
+  const effectiveMonth = `${month}-01`;
+
+  const { error } = await supabase.from("schedule_history").upsert(
     {
       user_id: uid,
-      setting_type: "schedule",
+      effective_month: effectiveMonth,
       schedule_slots: slots,
-      updated_at: new Date().toISOString(),
     },
-    { onConflict: "user_id,setting_type" },
+    {
+      onConflict: "user_id,effective_month",
+    },
   );
 
-  if (error) console.error("Error saving schedule:", error);
+  if (error) {
+    console.error("Error saving schedule:", error);
+  }
 };
